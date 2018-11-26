@@ -69,6 +69,43 @@ func (c *TwoCaptchaClient) SolveRecaptchaV2(siteURL, recaptchaKey string) (strin
 	)
 }
 
+// SolveRecaptchaV3 performs a recaptcha v3 solving request to 2captcha.com
+// and returns with the solved captcha if the request was successful.
+// Valid ApiKey is required.
+// See more details on https://2captcha.com/solving_recaptcha_v3
+func (c *TwoCaptchaClient) SolveRecaptchaV3(siteURL, recaptchaKey, action, minScore string) (string, error) {
+	captchaId, err := c.apiRequest(
+		ApiURL,
+		map[string]string{
+			"googlekey": recaptchaKey,
+			"pageurl":   siteURL,
+			"method":    "userrecaptcha",
+			"version": "v3",
+			"action": action,
+			"min_score": minScore,
+		},
+		0,
+		3,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return c.apiRequest(
+		ResultURL,
+		map[string]string{
+			"googlekey": recaptchaKey,
+			"pageurl":   siteURL,
+			"method":    "userrecaptcha",
+			"id":        captchaId,
+			"action":    "get",
+		},
+		5,
+		20,
+	)
+}
+
 func (c *TwoCaptchaClient) apiRequest(URL string, params map[string]string, delay time.Duration, retries int) (string, error) {
 	if retries <= 0 {
 		return "", errors.New("Maximum retries exceeded")
