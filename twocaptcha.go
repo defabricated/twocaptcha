@@ -4,6 +4,7 @@ package twocaptcha
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -73,7 +74,7 @@ func (c *TwoCaptchaClient) SolveRecaptchaV2(siteURL, recaptchaKey string) (strin
 // and returns with the solved captcha if the request was successful.
 // Valid ApiKey is required.
 // See more details on https://2captcha.com/solving_recaptcha_v3
-func (c *TwoCaptchaClient) SolveRecaptchaV3(siteURL, recaptchaKey, action, minScore string) (string, error) {
+func (c *TwoCaptchaClient) SolveRecaptchaV3(siteURL, recaptchaKey, action string, minScore float64) (string, error) {
 	captchaId, err := c.apiRequest(
 		ApiURL,
 		map[string]string{
@@ -82,7 +83,7 @@ func (c *TwoCaptchaClient) SolveRecaptchaV3(siteURL, recaptchaKey, action, minSc
 			"method":    "userrecaptcha",
 			"version": "v3",
 			"action": action,
-			"min_score": minScore,
+			"min_score": fmt.Sprintf("%.1f", minScore),
 		},
 		0,
 		3,
