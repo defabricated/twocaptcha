@@ -4,6 +4,7 @@ package twocaptcha
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -33,6 +34,43 @@ func New(apiKey string) *TwoCaptchaClient {
 		ApiKey: apiKey,
 		Client: http.DefaultClient,
 	}
+}
+
+// SolveRecaptchaV3 performs a recaptcha v3 solving request to 2captcha.com
+// and returns with the solved captcha if the request was successful.
+// Valid ApiKey is required.
+// See more details on https://2captcha.com/solving_recaptcha_v3
+func (c *TwoCaptchaClient) SolveRecaptchaV3(siteURL, recaptchaKey, action string, minScore float64) (string, error) {
+	captchaId, err := c.apiRequest(
+		ApiURL,
+		map[string]string{
+			"googlekey": recaptchaKey,
+			"pageurl":   siteURL,
+			"method":    "userrecaptcha",
+			"version":   "v3",
+			"action":    action,
+			"min_score": fmt.Sprintf("%.1f", minScore),
+		},
+		0,
+		3,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return c.apiRequest(
+		ResultURL,
+		map[string]string{
+			"googlekey": recaptchaKey,
+			"pageurl":   siteURL,
+			"method":    "userrecaptcha",
+			"id":        captchaId,
+			"action":    "get",
+		},
+		5,
+		20,
+	)
 }
 
 // SolveRecaptchaV2 performs a recaptcha v2 solving request to 2captcha.com
