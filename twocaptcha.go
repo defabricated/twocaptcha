@@ -40,7 +40,7 @@ func New(apiKey string) *TwoCaptchaClient {
 // and returns with the solved captcha and captcha ID if the request was successful.
 // Valid ApiKey is required.
 // See more details on https://2captcha.com/2captcha-api#solving_recaptchav2_new
-func (c *TwoCaptchaClient) SolveRecaptchaV2(siteURL, recaptchaKey string) (string, string, error) {
+func (c *TwoCaptchaClient) SolveRecaptchaV2(siteURL, recaptchaKey string, delay time.Duration, retries int) (string, string, error) {
 	captchaId, err := c.apiRequest(
 		ApiURL,
 		map[string]string{
@@ -56,6 +56,8 @@ func (c *TwoCaptchaClient) SolveRecaptchaV2(siteURL, recaptchaKey string) (strin
 		return "", "", err
 	}
 
+	time.Sleep(10 * time.Second)
+
 	resp, err := c.apiRequest(
 		ResultURL,
 		map[string]string{
@@ -65,8 +67,8 @@ func (c *TwoCaptchaClient) SolveRecaptchaV2(siteURL, recaptchaKey string) (strin
 			"id":        captchaId,
 			"action":    "get",
 		},
-		5,
-		20,
+		delay,
+		retries,
 	)
 	return resp, captchaId, err
 }
